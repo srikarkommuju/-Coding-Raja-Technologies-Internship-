@@ -1,0 +1,98 @@
+import os
+
+class Task:
+  def __init__(self, description, priority="low", due_date=None, completed=False):
+    self.description = description
+    self.priority = priority
+    self.due_date = due_date
+    self.completed = completed
+
+  def __str__(self):
+    status = "COMPLETED" if self.completed else "PENDING"
+    return f"[{status}] {self.priority.upper()}: {self.description} (Due: {self.due_date})"
+
+def load_tasks():
+  tasks = []
+  if os.path.exists("tasks.dat"):
+    with open("tasks.dat", "r") as f:
+      for line in f:
+        data = line.strip().split(",")
+        tasks.append(Task(data[0], data[1], data[2] if len(data) > 2 else None, data[3] == "True"))
+  return tasks
+
+def save_tasks(tasks):
+  with open("tasks.dat", "w") as f:
+    for task in tasks:
+      data = [task.description, task.priority, str(task.due_date) if task.due_date else "", str(task.completed)]
+      f.write(",".join(data) + "\n")
+
+def list_tasks(tasks):
+  if not tasks:
+    print("No tasks found!")
+  else:
+    for i, task in enumerate(tasks):
+      print(f"{i+1}. {task}")
+
+def add_task():
+  description = input("Enter task description: ")
+  priority = input("Enter priority (high, medium, low): ").lower()
+  while priority not in ["high", "medium", "low"]:
+    priority = input("Invalid priority. Enter again (high, medium, low): ").lower()
+  due_date = input("Enter due date (YYYY-MM-DD) (optional): ")
+  tasks.append(Task(description, priority, due_date))
+  print("Task added successfully!")
+  save_tasks(tasks)
+
+def mark_task_complete():
+  list_tasks(tasks)
+  if not tasks:
+    return
+  index = int(input("Enter task number to mark complete: ")) - 1
+  if index < 0 or index >= len(tasks):
+    print("Invalid task number!")
+  else:
+    tasks[index].completed = True
+    print("Task marked completed!")
+    save_tasks(tasks)
+
+def remove_task():
+  list_tasks(tasks)
+  if not tasks:
+    return
+  index = int(input("Enter task number to remove: ")) - 1
+  if index < 0 or index >= len(tasks):
+    print("Invalid task number!")
+  else:
+    tasks.pop(index)
+    print("Task removed successfully!")
+    save_tasks(tasks)
+
+def main():
+  global tasks
+  tasks = load_tasks()
+
+  while True:
+    print("\nTodo List Menu:")
+    print("1. List Tasks")
+    print("2. Add Task")
+    print("3. Mark Task Complete")
+    print("4. Remove Task")
+    print("5. Exit")
+    choice = input("Enter your choice: ")
+
+    if choice == "1":
+      list_tasks(tasks)
+    elif choice == "2":
+      add_task()
+    elif choice == "3":
+      mark_task_complete()
+    elif choice == "4":
+      remove_task()
+    elif choice == "5":
+      print("Exiting...")
+      break
+    else:
+      print("Invalid choice!")
+
+if __name__ == "__main__":
+  main()
