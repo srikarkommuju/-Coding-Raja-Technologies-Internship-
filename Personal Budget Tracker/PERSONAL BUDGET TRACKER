@@ -1,0 +1,85 @@
+import datetime
+from collections import defaultdict
+
+# Define categories (modify as needed)
+CATEGORIES = {
+    "income": ["Salary", "Investment income", "Other income"],
+    "expense": ["Rent", "Groceries", "Utilities", "Transportation", "Entertainment", "Other expenses"]
+}
+
+# Function to get valid user input
+def get_user_input(prompt, data_type=str):
+  while True:
+    try:
+      value = data_type(input(prompt))
+      return value
+    except ValueError:
+      print("Invalid input. Please try again.")
+
+# Function to add income or expense
+def add_transaction(type):
+  category = get_user_input(f"Enter {type} category ({', '.join(CATEGORIES[type])}): ")
+  if category not in CATEGORIES[type]:
+    print(f"Invalid {type} category. Please choose from the list.")
+    return
+  amount = float(get_user_input("Enter amount: "))
+  date = datetime.datetime.now().strftime("%Y-%m-%d")  # Capture transaction date
+  transactions[type][category].append({"amount": amount, "date": date})
+  print(f"{type.capitalize()} added successfully!")
+
+# Function to calculate remaining budget
+def calculate_budget():
+  total_income = sum(sum(value["amount"] for value in category_list) for category_list in transactions["income"].values())
+  total_expense = sum(sum(value["amount"] for value in category_list) for category_list in transactions["expense"].values())
+  remaining_budget = total_income - total_expense
+  print(f"Remaining budget: ${remaining_budget:.2f}")
+
+# Function to display expense analysis by category and date (optional)
+def analyze_expenses():
+  print("Expense Analysis:")
+  for category, transactions_list in transactions["expense"].items():
+    print(f"\tCategory: {category}")
+    for transaction in transactions_list:
+      print(f"\t\tAmount: ${transaction['amount']:.2f}, Date: {transaction['date']}")
+
+# Function to load transactions from a file (replace with database connection if needed)
+def load_transactions():
+  transactions = {"income": defaultdict(list), "expense": defaultdict(list)}
+  try:
+    with open("transactions.data", "r") as file:
+      data = eval(file.read())
+      transactions.update(data)
+  except FileNotFoundError:
+    pass
+  return transactions
+
+# Function to save transactions to a file (replace with database update if needed)
+def save_transactions():
+  with open("transactions.data", "w") as file:
+    file.write(str(transactions))
+
+# Main program loop
+transactions = load_transactions()
+while True:
+  print("\nBudget Tracker")
+  print("1. Add Income")
+  print("2. Add Expense")
+  print("3. Calculate Remaining Budget")
+  print("4. Analyze Expenses")
+  print("5. Exit")
+  choice = get_user_input("Enter your choice: ", int)
+
+  if choice == 1:
+    add_transaction("income")
+  elif choice == 2:
+    add_transaction("expense")
+  elif choice == 3:
+    calculate_budget()
+  elif choice == 4:
+    analyze_expenses()
+  elif choice == 5:
+    save_transactions()
+    print("Exiting program...")
+    break
+  else:
+    print("Invalid choice. Please try again.")
